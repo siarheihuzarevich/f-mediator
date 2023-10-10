@@ -13,6 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Rebase to get latest changes
+        run: |
+          git fetch origin main
+          git rebase origin/main
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -27,27 +32,26 @@ jobs:
       - name: Increment version in package.json
         run: npm version patch --prefix projects/f-mediator
 
-      - name: Pull latest changes
-        run: git pull origin main
-
-      - name: Commit and Push changes
-        uses: actions-js/push@master
+      - name: Commit version increment
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.MY_GITHUB_TOKEN }}
           message: "Increment version"
           branch: main
-
-      - name: Clear NPM Config
-        run: |
-          npm config rm proxy
-          npm config rm https-proxy
-          npm config rm registry
 
       - name: Build
         run: npm run build f-mediator
 
       - name: List contents of build directory
         run: ls -al dist/f-mediator
+
+  publish:
+    name: Publish
+    needs: test_and_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Disable Git
         run: git config --global url."https://".insteadOf ssh://
@@ -64,4 +68,3 @@ jobs:
           npm publish --access public --registry https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
