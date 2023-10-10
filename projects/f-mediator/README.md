@@ -58,18 +58,20 @@ class CreateUserValidator implements IFValidator<CreateUserRequest, CreateUserRe
 }
 ```
 
-Create handlers implementing IFQueryHandler interface.
+Create handlers implementing IFCommandHandler interface.
 
 ```typescript
+import { IFCommandHandler } from './i-f-command-handler';
+
 @Injectable({
   providedIn: 'root'
 })
-class CreateUserHandler implements IFQueryHandler<CreateUserRequest, CreateUserResponse> {
+class CreateUserHandler implements IFCommandHandler<CreateUserRequest, CreateUserResponse> {
   constructor(
     private dataContext: DataContext
   ) {
   }
-  
+
   handle(request: CreateUserRequest): Observable<CreateUserResponse> {
     const user = new User(request.firstName, request.lastName, request.email);
     this.dataContext.users.push(user);
