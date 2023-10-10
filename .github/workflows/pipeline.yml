@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  test_and_build:
-    name: Test and Build
+  test_build_and_publish:
+    name: Test, Build, and Publish
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -44,14 +44,6 @@ jobs:
 
       - name: List contents of build directory
         run: ls -al dist/f-mediator
-
-  publish:
-    name: Publish
-    needs: test_and_build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Disable Git
         run: git config --global url."https://".insteadOf ssh://
