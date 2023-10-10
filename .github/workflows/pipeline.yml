@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test_and_build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Increment version in package.json
+        run: npm version patch --prefix projects/f-mediator
+
+      - name: Pull latest changes
+        run: git pull origin main
+
+      - name: Commit and Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.MY_GITHUB_TOKEN }}
+          message: "Increment version"
+          branch: main
+
+      - name: Clear NPM Config
+        run: |
+          npm config rm proxy
+          npm config rm https-proxy
+          npm config rm registry
+
+      - name: Build
+        run: npm run build f-mediator
+
+      - name: List contents of build directory
+        run: ls -al dist/f-mediator
+
+      - name: Disable Git
+        run: git config --global url."https://".insteadOf ssh://
+
+      - name: Set up .npmrc file for authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > dist/f-mediator/.npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to NPM
+        run: |
+          cd dist/f-mediator
+          npm publish --access public --registry https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
