@@ -13,7 +13,6 @@ class HandlerFailure extends Error {
 class MockRequest implements IFRequest<string> {
 }
 
-// Validators
 class SuccessValidator implements IFValidator<MockRequest, string> {
   validate(request: MockRequest): Observable<Error[]> {
     return of([]);
@@ -26,7 +25,6 @@ class FailureValidator implements IFValidator<MockRequest, string> {
   }
 }
 
-// Handlers
 class SuccessHandler implements IFQueryHandler<MockRequest, string> {
   handle(request: MockRequest): Observable<string> {
     return of('Success');
