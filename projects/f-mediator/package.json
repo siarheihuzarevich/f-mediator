@@ -1,6 +1,6 @@
 {
   "name": "@foblex/mediator",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A mediator library for Angular facilitating a clean architecture with a better command-query separation.",
   "main": "index.js",
   "types": "index.d.ts",
