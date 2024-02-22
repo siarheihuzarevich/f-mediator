@@ -1,4 +1,4 @@
-# @foblex/mediator
+# @foblex/nestjs-mediator
 
 An advanced mediator library for NestJS, leveraging the Command Query Responsibility Segregation (CQRS) pattern to facilitate low coupling and high cohesion within applications. Designed to streamline the execution of commands and queries, @foblex/mediator supports a clean architecture by separating the responsibility of command execution and query handling.
 
@@ -10,10 +10,10 @@ An advanced mediator library for NestJS, leveraging the Command Query Responsibi
 
 ## Installation
 
-Install the F-Mediator library via npm:
+Install the @foblex/nestjs-mediator library via npm:
 
 ```bash
-npm install @foblex/mediator
+npm install @foblex/nestjs-mediator
 ```
 
 ## Usage
@@ -91,7 +91,7 @@ export class AppModule {
 }
 ```
 
-**Using F-Mediator Service**
+**Using FMediator Service**
 
 Inject FMediator service and use send method to send your requests.
 

@@ -2,6 +2,7 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "declaration": true,
     "target": "es2016",
     "module": "commonjs",
     "esModuleInterop": true,
@@ -10,7 +11,14 @@
     "skipLibCheck": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noLib": false
   },
-  "exclude": ["node_modules", "tests"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }
