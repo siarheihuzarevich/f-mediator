@@ -1,0 +1,42 @@
+{
+  "name": "@foblex/mediator",
+  "version": "1.0.5",
+  "description": "An advanced mediator library for NestJS, leveraging the Command Query Responsibility Segregation (CQRS) pattern to facilitate low coupling and high cohesion within applications. Designed to streamline the execution of commands and queries, @foblex/mediator supports a clean architecture by separating the responsibility of command execution and query handling, ensuring that your application's components remain easily maintainable and scalable.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siarheihuzarevich/f-mediator.git"
+  },
+  "private": false,
+  "keywords": [
+    "nestjs",
+    "mediator",
+    "cqrs",
+    "patterns",
+    "foblex"
+  ],
+  "author": "Siarhei Huzarevich",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/siarheihuzarevich/f-mediator/issues"
+  },
+  "homepage": "https://github.com/siarheihuzarevich/f-mediator#readme",
+  "peerDependencies": {
+    "@nestjs/common": "^8.0.0",
+    "@nestjs/core": "^8.0.0"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^8.0.0",
+    "@types/node": "^14.14.37",
+    "jest": "^26.6.3",
+    "typescript": "^4.2.4"
+  }
+}
