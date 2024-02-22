@@ -25,10 +25,12 @@ FMediator simplifies the handling of commands and queries within your Angular ap
 Create your request class implementing IRequest<TResponse> interface.
 
 ```typescript
-export class CreateAccountRequest implements IRequest<void> {
+export class CreateProductRequest implements IRequest<void> {
 
   constructor(
-      public emailAddress: string,
+      public name: string,
+      public description: string,
+      public price: number,
   ) {
   }
 }
@@ -37,23 +39,34 @@ export class CreateAccountRequest implements IRequest<void> {
 Create a validator implementing IRequestValidator<TRequest, TResponse> interface.
 
 ```typescript
-@Validator(CreateAccountRequest)
-export class CreateAccountHandler implements IRequestValidator<CreateAccountRequest, void> {
+@Validator(CreateProductRequest)
+export class CreateProductValidator
+    implements IRequestValidator<CreateProductRequest, void> {
 
   constructor(
-      @Inject(DATA_CONTEXT) private dataContext: IDataContext
+      @InjectModel(Product.name) private dataContext: Model<Product>
   ) {
   }
 
-  public async handle(payload: CreateAccountRequest): Promise<Error[]> {
+  public async handle(payload: CreateProductRequest): Promise<void> {
+    const errors: string[] = [];
 
-    const user = await this.dataContext.find("Users", { emailAddress: payload.emailAddress });
-
-    if (user) {
-      return [ new Error("Email address already exists") ];
+    if (!payload.name) {
+      errors.push("Name is required");
     }
 
-    return [];
+    if (!payload.price) {
+      errors.push("Price is required");
+    }
+
+    const product = await this.dataContext.findOne({ name: payload.name });
+    if (product) {
+      errors.push("Product already exists");
+    }
+
+    if (errors.length > 0) {
+      throw new HttpException({ errors }, 400);
+    }
   }
 }
 ```
@@ -61,19 +74,29 @@ export class CreateAccountHandler implements IRequestValidator<CreateAccountRequ
 Create handlers extending CommandExecutable class.
 
 ```typescript
-@Executable(CreateAccountRequest)
-export class CreateAccountHandler extends CommandExecutable<CreateAccountRequest, void> {
+@Executable(CreateProductRequest)
+export class CreateProductHandler
+    extends CommandExecutable<CreateProductRequest, void> {
 
   constructor(
-      @Inject(DATA_CONTEXT) private dataContext: IDataContext
+      @InjectModel(Product.name) private dataContext: Model<Product>
   ) {
     super();
   }
 
-  public async executeAsync(payload: CreateAccountRequest): Promise<void> {
-
-    this.dataContext.create('Users', { emailAddress: payload.emailAddress });
+  public async executeAsync(payload: CreateProductRequest): Promise<void> {
+    await this.dataContext.create({ ...payload, productId: uuid() });
   }
+}
+```
+
+Add your validators and handlers to the module providers.
+
+```typescript
+@Module({
+  providers: [ CreateProductValidator, CreateProductHandler ]
+})
+export class DomainModule {
 }
 ```
 

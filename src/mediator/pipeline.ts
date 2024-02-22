@@ -12,10 +12,7 @@ export class Pipeline<TRequest extends IRequest<TResponse> = any, TResponse = an
 
   public async execute(payload: TRequest): Promise<TResponse> {
     if (this.validator) {
-      const errors = await this.validator.handle(payload);
-      if (errors.length > 0) {
-        throw errors;
-      }
+      await this.validator.handle(payload);
     }
     return this.executable.handle(payload);
   }
