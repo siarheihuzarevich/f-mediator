@@ -2,6 +2,8 @@
 
 An advanced mediator library for NestJS, leveraging the Command Query Responsibility Segregation (CQRS) pattern to facilitate low coupling and high cohesion within applications. Designed to streamline the execution of commands and queries, @foblex/mediator supports a clean architecture by separating the responsibility of command execution and query handling.
 
+For an example of how to use this library, check out this [Demo Project](https://github.com/siarheihuzarevich/f-nestjs-infrastructure-examples).
+
 ## Features
 
 - Implements CQRS pattern for clear separation of command and query operations.
@@ -133,3 +135,7 @@ export class AccountController {
   }
 }
 ```
+
+**License**
+
+The code in this project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
