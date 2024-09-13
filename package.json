@@ -1,43 +1,41 @@
 {
-  "name": "@foblex/nestjs-mediator",
-  "version": "1.0.9",
-  "description": "An advanced mediator library for NestJS, leveraging the Command Query Responsibility Segregation (CQRS) pattern to facilitate low coupling and high cohesion within applications. Designed to streamline the execution of commands and queries, @foblex/mediator supports a clean architecture by separating the responsibility of command execution and query handling, ensuring that your application's components remain easily maintainable and scalable.",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "name": "@foblex/mediator",
+  "version": "0.0.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "jest"
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "publish": "ng build f-mediator && cd dist/f-mediator && npm publish"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/siarheihuzarevich/f-mediator.git"
-  },
-  "private": false,
-  "keywords": [
-    "nestjs",
-    "mediator",
-    "cqrs",
-    "patterns",
-    "foblex"
-  ],
-  "author": "Siarhei Huzarevich",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/siarheihuzarevich/f-mediator/issues"
-  },
-  "homepage": "https://github.com/siarheihuzarevich/f-mediator#readme",
-  "peerDependencies": {
-    "@nestjs/common": "^9.0.0 || ^10.0.0",
-    "@nestjs/core": "^9.0.0 || ^10.0.0"
-  },
+  "private": true,
   "dependencies": {
-    "reflect-metadata": "^0.1.13 || ^0.2.0"
+    "@angular/animations": "~12.2.0",
+    "@angular/common": "~12.2.0",
+    "@angular/compiler": "~12.2.0",
+    "@angular/core": "~12.2.0",
+    "@angular/forms": "~12.2.0",
+    "@angular/platform-browser": "~12.2.0",
+    "@angular/platform-browser-dynamic": "~12.2.0",
+    "@angular/router": "~12.2.0",
+    "rxjs": "~6.6.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@nestjs/testing": "^8.0.0",
-    "@types/node": "^14.14.37",
-    "jest": "^26.6.3",
-    "ts-loader": "^9.5.1",
-    "typescript": "^4.9.5"
+    "@angular-devkit/build-angular": "~12.2.18",
+    "@angular/cli": "~12.2.18",
+    "@angular/compiler-cli": "~12.2.0",
+    "@types/jasmine": "~3.8.0",
+    "@types/node": "^12.11.1",
+    "jasmine-core": "~3.8.0",
+    "karma": "~6.3.0",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage": "~2.0.3",
+    "karma-jasmine": "~4.0.0",
+    "karma-jasmine-html-reporter": "~1.7.0",
+    "ng-packagr": "^12.1.1",
+    "typescript": "~4.3.5"
   }
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "f-mediator": {
+      "projectType": "library",
+      "root": "projects/f-mediator",
+      "sourceRoot": "projects/f-mediator/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/f-mediator/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/f-mediator/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/f-mediator/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    }
+  }
+}

@@ -36,7 +36,7 @@ export class MyRequest {
 ### 2. Create a Validator (Optional)
 
 Implement a validator by extending IValidator and using the FValidatorRegister decorator:
-    
+
 ```typescript
 import { Injectable } from '@angular/core';
 import { IValidator, FValidatorRegister } from 'angular-flow-mediator';
