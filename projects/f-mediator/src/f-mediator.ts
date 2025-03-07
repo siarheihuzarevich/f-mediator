@@ -34,4 +34,9 @@ export class FMediator {
 
     throw new Error('Handler not registered for request type.');
   }
+
+  // run pipeline without validation and error handling
+  public execute<TResponse>(request: any): TResponse {
+    return FMediator.pipelines.get(request.constructor.name)!.execute(request, this.injector);
+  }
 }

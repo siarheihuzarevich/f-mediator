@@ -1,6 +1,6 @@
 {
   "name": "@foblex/mediator",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "An Angular library that implements the mediator pattern, providing a centralized way to handle requests with optional\nvalidation and execution pipelines.",
   "main": "index.js",
   "types": "index.d.ts",

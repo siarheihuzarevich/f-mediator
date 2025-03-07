@@ -21,6 +21,10 @@ export class Pipeline<TRequest, TResponse>
     return injector.get(this.execution).handle(request);
   }
 
+  public execute(request: TRequest, injector: Injector): TResponse | void {
+    return injector.get(this.execution).handle(request);
+  }
+
   public setValidator(validator: Type<IValidator<TRequest>>): void {
     this.validator = validator;
   }
