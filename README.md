@@ -229,9 +229,10 @@ export class ProcessDataHandler implements ICommandHandler<ProcessDataCommand, v
 }
 ```
 
-### Backward Compatibility
+### Backward Compatibility & Migration
 
-The library maintains full backward compatibility. Validators can still return simple boolean values:
+#### Validators
+Validators maintain full backward compatibility and can still return simple boolean values:
 
 ```typescript
 @Injectable()
@@ -239,6 +240,32 @@ The library maintains full backward compatibility. Validators can still return s
 export class MyRequestValidator implements IValidator<MyRequest> {
   handle(request: MyRequest): boolean {
     return request.payload !== null; // Simple boolean validation
+  }
+}
+```
+
+#### Execution Handlers
+**Note**: Execution handlers now receive an optional second parameter `context`. Existing implementations need to update their signature:
+
+**Before:**
+```typescript
+@Injectable()
+@FExecutionRegister(MyRequest)
+export class MyRequestHandler implements IExecution<MyRequest, any> {
+  handle(request: MyRequest): any {
+    return `Processed: ${request.payload}`;
+  }
+}
+```
+
+**After (Migration):**
+```typescript
+@Injectable()
+@FExecutionRegister(MyRequest)
+export class MyRequestHandler implements IExecution<MyRequest, any> {
+  handle(request: MyRequest, context?: IPipelineContext<any>): any {
+    // context parameter is optional, can be ignored if not needed
+    return `Processed: ${request.payload}`;
   }
 }
 ```
