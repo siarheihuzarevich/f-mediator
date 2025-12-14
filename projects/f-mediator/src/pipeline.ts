@@ -29,7 +29,7 @@ export class Pipeline<TRequest, TResponse, TContext = any>
   }
 
   public execute(request: TRequest, injector: Injector): TResponse | void {
-    return injector.get(this.execution).handle(request);
+    return injector.get(this.execution).handle(request, undefined);
   }
 
   public setValidator(validator: Type<IValidator<TRequest, TContext>>): void {
