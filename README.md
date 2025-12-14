@@ -36,19 +36,29 @@ export class MyRequest {
 
 ### 2. Create a Validator (Optional)
 
-Implement a validator by extending IValidator and using the FValidatorRegister decorator:
+Implement a validator by extending IValidator and using the FValidatorRegister decorator. Validators should throw errors if validation fails:
     
 ```typescript
 import { Injectable } from '@angular/core';
-import { IValidator, FValidatorRegister } from 'angular-flow-mediator';
+import { IValidator, FValidatorRegister, ValidationError, ValidationSkipError } from '@foblex/mediator';
 import { MyRequest } from './my-request';
 
 @Injectable()
 @FValidatorRegister(MyRequest)
 export class MyRequestValidator implements IValidator<MyRequest> {
-  handle(request: MyRequest): boolean {
-    // Implement validation logic
-    return request.payload !== null; // Return true if valid, false otherwise
+  handle(request: MyRequest): void {
+    // If validation fails, throw ValidationError
+    if (request.payload === null) {
+      throw new ValidationError('Payload cannot be null');
+    }
+    
+    // If conditions not met but not an error, throw ValidationSkipError
+    // This will skip execution without throwing an error
+    if (request.payload === 'skip') {
+      throw new ValidationSkipError('Skipping execution for this request');
+    }
+    
+    // If validation passes, return nothing
   }
 }
 ```
@@ -59,7 +69,7 @@ Implement an execution handler by extending IExecution and using the FExecutionR
 
 ```typescript
 import { Injectable } from '@angular/core';
-import { IExecution, FExecutionRegister } from 'angular-flow-mediator';
+import { IExecution, FExecutionRegister } from '@foblex/mediator';
 import { MyRequest } from './my-request';
 
 @Injectable()
@@ -117,6 +127,259 @@ export class AppComponent {
   }
 }
 ```
+
+## Advanced Features
+
+### CQRS Pattern
+
+The library supports full CQRS (Command Query Responsibility Segregation) pattern with dedicated interfaces and decorators:
+
+#### Commands
+
+Commands represent actions that change state:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { ICommand, ICommandHandler, FCommandHandlerRegister } from '@foblex/mediator';
+
+export class CreateUserCommand implements ICommand {
+  static readonly fToken = Symbol('CreateUserCommand');
+  constructor(public username: string, public email: string) {}
+}
+
+@Injectable()
+@FCommandHandlerRegister(CreateUserCommand)
+export class CreateUserHandler implements ICommandHandler<CreateUserCommand, string> {
+  handle(command: CreateUserCommand, context?: IPipelineContext<any>): string {
+    // Create user logic
+    return 'user-id-123';
+  }
+}
+
+// Usage
+const userId = this.mediator.send<string>(new CreateUserCommand('john', 'john@example.com'));
+```
+
+#### Queries
+
+Queries represent read operations that return data:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IQuery, IQueryHandler, FQueryHandlerRegister } from '@foblex/mediator';
+
+export class GetUserQuery implements IQuery<UserDto> {
+  static readonly fToken = Symbol('GetUserQuery');
+  constructor(public userId: string) {}
+}
+
+export interface UserDto {
+  id: string;
+  username: string;
+  email: string;
+}
+
+@Injectable()
+@FQueryHandlerRegister(GetUserQuery)
+export class GetUserHandler implements IQueryHandler<GetUserQuery, UserDto> {
+  handle(query: GetUserQuery, context?: IPipelineContext<any>): UserDto {
+    // Fetch user logic
+    return { id: query.userId, username: 'john', email: 'john@example.com' };
+  }
+}
+
+// Usage
+const user = this.mediator.send<UserDto>(new GetUserQuery('user-id-123'));
+```
+
+### Pipeline Context Sharing
+
+Validators can compute data and share it with execution handlers through a typed context. This avoids duplicate computations:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { 
+  ICommand, 
+  ICommandHandler, 
+  IValidator, 
+  IPipelineContext,
+  FCommandHandlerRegister,
+  FValidatorRegister 
+} from '@foblex/mediator';
+
+export class ProcessDataCommand implements ICommand {
+  static readonly fToken = Symbol('ProcessDataCommand');
+  constructor(public rawData: string) {}
+}
+
+// Validator computes and shares normalized data
+@Injectable()
+@FValidatorRegister(ProcessDataCommand)
+export class ProcessDataValidator implements IValidator<ProcessDataCommand, { normalizedData: string }> {
+  handle(command: ProcessDataCommand): IPipelineContext<{ normalizedData: string }> {
+    // Validate the data
+    if (!command.rawData) {
+      throw new ValidationError('Raw data is required');
+    }
+    
+    // Perform expensive computation once
+    const normalizedData = command.rawData.toLowerCase().trim();
+    
+    // Return context with computed data to share with handler
+    return {
+      data: { normalizedData }
+    };
+  }
+}
+
+// Handler receives and uses the computed context
+@Injectable()
+@FCommandHandlerRegister(ProcessDataCommand)
+export class ProcessDataHandler implements ICommandHandler<ProcessDataCommand, void> {
+  handle(command: ProcessDataCommand, context?: IPipelineContext<{ normalizedData: string }>): void {
+    // Use the normalized data from validator
+    const data = context?.data.normalizedData || command.rawData;
+    console.log(`Processing: ${data}`);
+  }
+}
+```
+
+### Error Handling in Validators
+
+The library provides typed error classes for validation:
+
+#### ValidationError
+
+Use `ValidationError` when validation fails due to invalid data:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IValidator, FValidatorRegister, ValidationError } from '@foblex/mediator';
+
+@Injectable()
+@FValidatorRegister(CreateUserCommand)
+export class CreateUserValidator implements IValidator<CreateUserCommand> {
+  handle(command: CreateUserCommand): void {
+    if (!command.email.includes('@')) {
+      throw new ValidationError('Invalid email format');
+    }
+    if (command.username.length < 3) {
+      throw new ValidationError('Username must be at least 3 characters');
+    }
+  }
+}
+```
+
+#### ValidationSkipError
+
+Use `ValidationSkipError` when conditions are not met but it's not an error - execution should simply be skipped:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IValidator, FValidatorRegister, ValidationSkipError } from '@foblex/mediator';
+
+@Injectable()
+@FValidatorRegister(ProcessOrderCommand)
+export class ProcessOrderValidator implements IValidator<ProcessOrderCommand> {
+  handle(command: ProcessOrderCommand): void {
+    // Skip processing for already processed orders
+    if (command.status === 'processed') {
+      throw new ValidationSkipError('Order already processed');
+    }
+    
+    // Skip processing for cancelled orders (not an error, just skip)
+    if (command.status === 'cancelled') {
+      throw new ValidationSkipError('Order is cancelled');
+    }
+  }
+}
+```
+
+The pipeline will catch `ValidationSkipError` and simply return without executing the handler, while other errors will propagate.
+
+### Backward Compatibility & Migration
+
+#### Validators
+**Breaking Change**: Validators no longer return boolean values. They should return `void` or `IPipelineContext` and throw errors for validation failures.
+
+**Before:**
+```typescript
+@Injectable()
+@FValidatorRegister(MyRequest)
+export class MyRequestValidator implements IValidator<MyRequest> {
+  handle(request: MyRequest): boolean {
+    return request.payload !== null; // Old style
+  }
+}
+```
+
+**After (Migration):**
+```typescript
+@Injectable()
+@FValidatorRegister(MyRequest)
+export class MyRequestValidator implements IValidator<MyRequest> {
+  handle(request: MyRequest): void {
+    if (request.payload === null) {
+      throw new ValidationError('Payload cannot be null');
+    }
+  }
+}
+```
+
+#### Execution Handlers
+**Note**: Execution handlers now receive an optional second parameter `context`. Existing implementations need to update their signature:
+
+**Before:**
+```typescript
+@Injectable()
+@FExecutionRegister(MyRequest)
+export class MyRequestHandler implements IExecution<MyRequest, any> {
+  handle(request: MyRequest): any {
+    return `Processed: ${request.payload}`;
+  }
+}
+```
+
+**After (Migration):**
+```typescript
+@Injectable()
+@FExecutionRegister(MyRequest)
+export class MyRequestHandler implements IExecution<MyRequest, any> {
+  handle(request: MyRequest, context?: IPipelineContext<any>): any {
+    // context parameter is optional, can be ignored if not needed
+    return `Processed: ${request.payload}`;
+  }
+}
+```
+
+## API Reference
+
+### Core Interfaces
+
+- **ICommand**: Marker interface for commands
+- **IQuery<TResponse>**: Marker interface for queries with response type
+- **ICommandHandler<TCommand, TResponse>**: Handler for commands
+- **IQueryHandler<TQuery, TResponse>**: Handler for queries
+- **IValidator<TRequest, TContext>**: Validator that returns void or context, throws errors for validation failures
+- **IExecution<TRequest, TResponse, TContext>**: Execution handler with optional context input
+- **IPipelineContext<TContext>**: Container for shared context data
+
+### Error Classes
+
+- **ValidationError**: Thrown when validation fails due to invalid data
+- **ValidationSkipError**: Thrown when conditions are not met but execution should skip (not a real error)
+
+### Decorators
+
+- **@FCommandHandlerRegister(commandType)**: Register a command handler
+- **@FQueryHandlerRegister(queryType)**: Register a query handler
+- **@FValidatorRegister(requestType)**: Register a validator
+- **@FExecutionRegister(requestType)**: Register an execution handler
+
+### FMediator Methods
+
+- **send<TResponse>(request: any): TResponse**: Send any request (commands, queries, or requests) through the pipeline with validation
+- **execute<TResponse>(request: any): TResponse**: Execute request without validation
 
 ## License
 

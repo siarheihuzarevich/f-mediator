@@ -1,6 +1,6 @@
 import { Type } from '@angular/core';
-import { FMediator } from './f-mediator';
-import { IValidator } from './i-validator';
+import { FMediator } from '../core/f-mediator';
+import { IValidator } from '../interfaces/i-validator';
 
 type Constructor<T = any> = new (...args: any[]) => T;
 
