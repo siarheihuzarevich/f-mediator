@@ -36,19 +36,29 @@ export class MyRequest {
 
 ### 2. Create a Validator (Optional)
 
-Implement a validator by extending IValidator and using the FValidatorRegister decorator:
+Implement a validator by extending IValidator and using the FValidatorRegister decorator. Validators should throw errors if validation fails:
     
 ```typescript
 import { Injectable } from '@angular/core';
-import { IValidator, FValidatorRegister } from 'angular-flow-mediator';
+import { IValidator, FValidatorRegister, ValidationError, ValidationSkipError } from 'angular-flow-mediator';
 import { MyRequest } from './my-request';
 
 @Injectable()
 @FValidatorRegister(MyRequest)
 export class MyRequestValidator implements IValidator<MyRequest> {
-  handle(request: MyRequest): boolean {
-    // Implement validation logic
-    return request.payload !== null; // Return true if valid, false otherwise
+  handle(request: MyRequest): void {
+    // If validation fails, throw ValidationError
+    if (request.payload === null) {
+      throw new ValidationError('Payload cannot be null');
+    }
+    
+    // If conditions not met but not an error, throw ValidationSkipError
+    // This will skip execution without throwing an error
+    if (request.payload === 'skip') {
+      throw new ValidationSkipError('Skipping execution for this request');
+    }
+    
+    // If validation passes, return nothing
   }
 }
 ```
@@ -207,10 +217,15 @@ export class ProcessDataCommand implements ICommand {
 @FValidatorRegister(ProcessDataCommand)
 export class ProcessDataValidator implements IValidator<ProcessDataCommand, { normalizedData: string }> {
   handle(command: ProcessDataCommand): IPipelineContext<{ normalizedData: string }> {
+    // Validate the data
+    if (!command.rawData) {
+      throw new ValidationError('Raw data is required');
+    }
+    
     // Perform expensive computation once
     const normalizedData = command.rawData.toLowerCase().trim();
     
-    // Return context with computed data
+    // Return context with computed data to share with handler
     return {
       data: { normalizedData }
     };
@@ -229,17 +244,84 @@ export class ProcessDataHandler implements ICommandHandler<ProcessDataCommand, v
 }
 ```
 
+### Error Handling in Validators
+
+The library provides typed error classes for validation:
+
+#### ValidationError
+
+Use `ValidationError` when validation fails due to invalid data:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IValidator, FValidatorRegister, ValidationError } from '@foblex/mediator';
+
+@Injectable()
+@FValidatorRegister(CreateUserCommand)
+export class CreateUserValidator implements IValidator<CreateUserCommand> {
+  handle(command: CreateUserCommand): void {
+    if (!command.email.includes('@')) {
+      throw new ValidationError('Invalid email format');
+    }
+    if (command.username.length < 3) {
+      throw new ValidationError('Username must be at least 3 characters');
+    }
+  }
+}
+```
+
+#### ValidationSkipError
+
+Use `ValidationSkipError` when conditions are not met but it's not an error - execution should simply be skipped:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IValidator, FValidatorRegister, ValidationSkipError } from '@foblex/mediator';
+
+@Injectable()
+@FValidatorRegister(ProcessOrderCommand)
+export class ProcessOrderValidator implements IValidator<ProcessOrderCommand> {
+  handle(command: ProcessOrderCommand): void {
+    // Skip processing for already processed orders
+    if (command.status === 'processed') {
+      throw new ValidationSkipError('Order already processed');
+    }
+    
+    // Skip processing for cancelled orders (not an error, just skip)
+    if (command.status === 'cancelled') {
+      throw new ValidationSkipError('Order is cancelled');
+    }
+  }
+}
+```
+
+The pipeline will catch `ValidationSkipError` and simply return without executing the handler, while other errors will propagate.
+
 ### Backward Compatibility & Migration
 
 #### Validators
-Validators maintain full backward compatibility and can still return simple boolean values:
+**Breaking Change**: Validators no longer return boolean values. They should return `void` or `IPipelineContext` and throw errors for validation failures.
 
+**Before:**
 ```typescript
 @Injectable()
 @FValidatorRegister(MyRequest)
 export class MyRequestValidator implements IValidator<MyRequest> {
   handle(request: MyRequest): boolean {
-    return request.payload !== null; // Simple boolean validation
+    return request.payload !== null; // Old style
+  }
+}
+```
+
+**After (Migration):**
+```typescript
+@Injectable()
+@FValidatorRegister(MyRequest)
+export class MyRequestValidator implements IValidator<MyRequest> {
+  handle(request: MyRequest): void {
+    if (request.payload === null) {
+      throw new ValidationError('Payload cannot be null');
+    }
   }
 }
 ```
@@ -278,9 +360,14 @@ export class MyRequestHandler implements IExecution<MyRequest, any> {
 - **IQuery<TResponse>**: Marker interface for queries with response type
 - **ICommandHandler<TCommand, TResponse>**: Handler for commands
 - **IQueryHandler<TQuery, TResponse>**: Handler for queries
-- **IValidator<TRequest, TContext>**: Validator with optional context output
+- **IValidator<TRequest, TContext>**: Validator that returns void or context, throws errors for validation failures
 - **IExecution<TRequest, TResponse, TContext>**: Execution handler with optional context input
 - **IPipelineContext<TContext>**: Container for shared context data
+
+### Error Classes
+
+- **ValidationError**: Thrown when validation fails due to invalid data
+- **ValidationSkipError**: Thrown when conditions are not met but execution should skip (not a real error)
 
 ### Decorators
 

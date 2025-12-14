@@ -26,4 +26,8 @@ export * from './i-pipeline-context';
 
 export * from './pipeline';
 
+export * from './validation-error';
+
+export * from './validation-skip-error';
+
 

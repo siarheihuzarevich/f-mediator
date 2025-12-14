@@ -3,6 +3,7 @@ import { IExecution } from './i-execution';
 import { Injector, Type } from '@angular/core';
 import { IHandler } from './i-handler';
 import { IPipelineContext } from './i-pipeline-context';
+import { ValidationSkipError } from './validation-skip-error';
 
 export class Pipeline<TRequest, TResponse, TContext = any>
   implements IHandler<TRequest, TResponse | void> {
@@ -14,14 +15,19 @@ export class Pipeline<TRequest, TResponse, TContext = any>
     let context: IPipelineContext<TContext> | undefined;
     
     if (this.validator) {
-      const validationResult = injector.get(this.validator).handle(request);
-      
-      if (typeof validationResult === 'boolean') {
-        if (!validationResult) {
+      try {
+        const validationResult = injector.get(this.validator).handle(request);
+        
+        if (validationResult !== undefined && validationResult !== null) {
+          context = validationResult;
+        }
+      } catch (error) {
+        if (error instanceof ValidationSkipError) {
+          // Not an error, just skip execution
           return;
         }
-      } else {
-        context = validationResult;
+        // Re-throw other errors (including ValidationError)
+        throw error;
       }
     }
 
