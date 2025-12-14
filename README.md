@@ -140,7 +140,7 @@ export class CreateUserCommand implements ICommand {
 @Injectable()
 @FCommandHandlerRegister(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand, string> {
-  handle(command: CreateUserCommand): string {
+  handle(command: CreateUserCommand, context?: IPipelineContext<any>): string {
     // Create user logic
     return 'user-id-123';
   }
@@ -172,7 +172,7 @@ export interface UserDto {
 @Injectable()
 @FQueryHandlerRegister(GetUserQuery)
 export class GetUserHandler implements IQueryHandler<GetUserQuery, UserDto> {
-  handle(query: GetUserQuery): UserDto {
+  handle(query: GetUserQuery, context?: IPipelineContext<any>): UserDto {
     // Fetch user logic
     return { id: query.userId, username: 'john', email: 'john@example.com' };
   }
