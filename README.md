@@ -118,6 +118,157 @@ export class AppComponent {
 }
 ```
 
+## Advanced Features
+
+### CQRS Pattern
+
+The library supports full CQRS (Command Query Responsibility Segregation) pattern with dedicated interfaces and decorators:
+
+#### Commands
+
+Commands represent actions that change state:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { ICommand, ICommandHandler, FCommandHandlerRegister } from '@foblex/mediator';
+
+export class CreateUserCommand implements ICommand {
+  static readonly fToken = Symbol('CreateUserCommand');
+  constructor(public username: string, public email: string) {}
+}
+
+@Injectable()
+@FCommandHandlerRegister(CreateUserCommand)
+export class CreateUserHandler implements ICommandHandler<CreateUserCommand, string> {
+  handle(command: CreateUserCommand): string {
+    // Create user logic
+    return 'user-id-123';
+  }
+}
+
+// Usage
+const userId = this.mediator.sendCommand<string>(new CreateUserCommand('john', 'john@example.com'));
+```
+
+#### Queries
+
+Queries represent read operations that return data:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { IQuery, IQueryHandler, FQueryHandlerRegister } from '@foblex/mediator';
+
+export class GetUserQuery implements IQuery<UserDto> {
+  static readonly fToken = Symbol('GetUserQuery');
+  constructor(public userId: string) {}
+}
+
+export interface UserDto {
+  id: string;
+  username: string;
+  email: string;
+}
+
+@Injectable()
+@FQueryHandlerRegister(GetUserQuery)
+export class GetUserHandler implements IQueryHandler<GetUserQuery, UserDto> {
+  handle(query: GetUserQuery): UserDto {
+    // Fetch user logic
+    return { id: query.userId, username: 'john', email: 'john@example.com' };
+  }
+}
+
+// Usage
+const user = this.mediator.sendQuery<UserDto>(new GetUserQuery('user-id-123'));
+```
+
+### Pipeline Context Sharing
+
+Validators can compute data and share it with execution handlers through a typed context. This avoids duplicate computations:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { 
+  ICommand, 
+  ICommandHandler, 
+  IValidator, 
+  IPipelineContext,
+  FCommandHandlerRegister,
+  FValidatorRegister 
+} from '@foblex/mediator';
+
+export class ProcessDataCommand implements ICommand {
+  static readonly fToken = Symbol('ProcessDataCommand');
+  constructor(public rawData: string) {}
+}
+
+// Validator computes and shares normalized data
+@Injectable()
+@FValidatorRegister(ProcessDataCommand)
+export class ProcessDataValidator implements IValidator<ProcessDataCommand, { normalizedData: string }> {
+  handle(command: ProcessDataCommand): IPipelineContext<{ normalizedData: string }> {
+    // Perform expensive computation once
+    const normalizedData = command.rawData.toLowerCase().trim();
+    
+    // Return context with computed data
+    return {
+      data: { normalizedData }
+    };
+  }
+}
+
+// Handler receives and uses the computed context
+@Injectable()
+@FCommandHandlerRegister(ProcessDataCommand)
+export class ProcessDataHandler implements ICommandHandler<ProcessDataCommand, void> {
+  handle(command: ProcessDataCommand, context?: IPipelineContext<{ normalizedData: string }>): void {
+    // Use the normalized data from validator
+    const data = context?.data.normalizedData || command.rawData;
+    console.log(`Processing: ${data}`);
+  }
+}
+```
+
+### Backward Compatibility
+
+The library maintains full backward compatibility. Validators can still return simple boolean values:
+
+```typescript
+@Injectable()
+@FValidatorRegister(MyRequest)
+export class MyRequestValidator implements IValidator<MyRequest> {
+  handle(request: MyRequest): boolean {
+    return request.payload !== null; // Simple boolean validation
+  }
+}
+```
+
+## API Reference
+
+### Core Interfaces
+
+- **ICommand**: Marker interface for commands
+- **IQuery<TResponse>**: Marker interface for queries with response type
+- **ICommandHandler<TCommand, TResponse>**: Handler for commands
+- **IQueryHandler<TQuery, TResponse>**: Handler for queries
+- **IValidator<TRequest, TContext>**: Validator with optional context output
+- **IExecution<TRequest, TResponse, TContext>**: Execution handler with optional context input
+- **IPipelineContext<TContext>**: Container for shared context data
+
+### Decorators
+
+- **@FCommandHandlerRegister(commandType)**: Register a command handler
+- **@FQueryHandlerRegister(queryType)**: Register a query handler
+- **@FValidatorRegister(requestType)**: Register a validator
+- **@FExecutionRegister(requestType)**: Register an execution handler
+
+### FMediator Methods
+
+- **send<TResponse>(request: any): TResponse**: Send any request
+- **sendCommand<TResponse>(command: ICommand): TResponse**: Send a command
+- **sendQuery<TResponse>(query: IQuery<TResponse>): TResponse**: Send a query
+- **execute<TResponse>(request: any): TResponse**: Execute without validation
+
 ## License
 
 This project is licensed under the MIT License.

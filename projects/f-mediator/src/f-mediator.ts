@@ -2,26 +2,28 @@ import {inject, Injectable, Injector, Type} from '@angular/core';
 import { IExecution } from './i-execution';
 import { IValidator } from './i-validator';
 import { Pipeline } from './pipeline';
+import { ICommand } from './i-command';
+import { IQuery } from './i-query';
 
 @Injectable()
 export class FMediator {
 
   private readonly _injector = inject(Injector);
 
-  public static pipelines = new Map<string, Pipeline<any, any>>();
+  public static pipelines = new Map<string, Pipeline<any, any, any>>();
 
-  public static registerPipeline<TRequest, TResponse>(
+  public static registerPipeline<TRequest, TResponse, TContext = any>(
     type: any,
-    handler: Type<IValidator<TRequest>> | Type<IExecution<TRequest, TResponse>>,
+    handler: Type<IValidator<TRequest, TContext>> | Type<IExecution<TRequest, TResponse, TContext>>,
     isValidator: boolean
   ): void {
     if (!type || !type.fToken) {
       throw new Error('Type must have a fToken static property.');
     }
-    const pipeline = this.pipelines.get(type.fToken) || new Pipeline<TRequest, TResponse>();
+    const pipeline = this.pipelines.get(type.fToken) || new Pipeline<TRequest, TResponse, TContext>();
     isValidator
-      ? pipeline.setValidator(handler as Type<IValidator<TRequest>>)
-      : pipeline.setExecution(handler as Type<IExecution<TRequest, TResponse>>);
+      ? pipeline.setValidator(handler as Type<IValidator<TRequest, TContext>>)
+      : pipeline.setExecution(handler as Type<IExecution<TRequest, TResponse, TContext>>);
 
     this.pipelines.set(type.fToken, pipeline);
   }
@@ -33,6 +35,14 @@ export class FMediator {
     }
 
     throw new Error('Handler not registered for request type.');
+  }
+
+  public sendCommand<TResponse = void>(command: ICommand): TResponse {
+    return this.send<TResponse>(command);
+  }
+
+  public sendQuery<TResponse>(query: IQuery<TResponse>): TResponse {
+    return this.send<TResponse>(query);
   }
 
   // run pipeline without validation and error handling
