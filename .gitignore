@@ -6,6 +6,9 @@
 /out-tsc
 # Only exists if Bazel was run
 /bazel-out
+# Compiled JavaScript files in source
+projects/**/*.js
+projects/**/*.js.map
 
 # dependencies
 /node_modules
