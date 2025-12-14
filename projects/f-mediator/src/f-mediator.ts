@@ -37,20 +37,6 @@ export class FMediator {
     throw new Error('Handler not registered for request type.');
   }
 
-  public sendCommand<TResponse = void>(command: ICommand): TResponse {
-    if (!(command as any).constructor?.fToken) {
-      throw new Error('Command must have a fToken static property on its constructor.');
-    }
-    return this.send<TResponse>(command);
-  }
-
-  public sendQuery<TResponse>(query: IQuery<TResponse>): TResponse {
-    if (!(query as any).constructor?.fToken) {
-      throw new Error('Query must have a fToken static property on its constructor.');
-    }
-    return this.send<TResponse>(query);
-  }
-
   // run pipeline without validation and error handling
   public execute<TResponse>(request: any): TResponse {
     return FMediator.pipelines.get(request.constructor.fToken)!.execute(request, this._injector);

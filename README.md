@@ -147,7 +147,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand, str
 }
 
 // Usage
-const userId = this.mediator.sendCommand<string>(new CreateUserCommand('john', 'john@example.com'));
+const userId = this.mediator.send<string>(new CreateUserCommand('john', 'john@example.com'));
 ```
 
 #### Queries
@@ -179,7 +179,7 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery, UserDto> {
 }
 
 // Usage
-const user = this.mediator.sendQuery<UserDto>(new GetUserQuery('user-id-123'));
+const user = this.mediator.send<UserDto>(new GetUserQuery('user-id-123'));
 ```
 
 ### Pipeline Context Sharing
@@ -291,10 +291,8 @@ export class MyRequestHandler implements IExecution<MyRequest, any> {
 
 ### FMediator Methods
 
-- **send<TResponse>(request: any): TResponse**: Send any request
-- **sendCommand<TResponse>(command: ICommand): TResponse**: Send a command
-- **sendQuery<TResponse>(query: IQuery<TResponse>): TResponse**: Send a query
-- **execute<TResponse>(request: any): TResponse**: Execute without validation
+- **send<TResponse>(request: any): TResponse**: Send any request (commands, queries, or requests) through the pipeline with validation
+- **execute<TResponse>(request: any): TResponse**: Execute request without validation
 
 ## License
 
