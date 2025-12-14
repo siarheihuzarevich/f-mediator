@@ -1,9 +1,9 @@
-import { IValidator } from './i-validator';
-import { IExecution } from './i-execution';
+import { IValidator } from '../interfaces/i-validator';
+import { IExecution } from '../interfaces/i-execution';
 import { Injector, Type } from '@angular/core';
-import { IHandler } from './i-handler';
-import { IPipelineContext } from './i-pipeline-context';
-import { ValidationSkipError } from './validation-skip-error';
+import { IHandler } from '../interfaces/i-handler';
+import { IPipelineContext } from '../interfaces/i-pipeline-context';
+import { ValidationSkipError } from '../errors/validation-skip-error';
 
 export class Pipeline<TRequest, TResponse, TContext = any>
   implements IHandler<TRequest, TResponse | void> {

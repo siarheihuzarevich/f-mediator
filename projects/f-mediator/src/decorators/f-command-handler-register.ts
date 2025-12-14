@@ -1,7 +1,7 @@
 import { Type } from '@angular/core';
-import { FMediator } from './f-mediator';
-import { ICommandHandler } from './i-command-handler';
-import { ICommand } from './i-command';
+import { FMediator } from '../core/f-mediator';
+import { ICommandHandler } from '../interfaces/i-command-handler';
+import { ICommand } from '../interfaces/i-command';
 
 type Constructor<T = any> = new (...args: any[]) => T;
 

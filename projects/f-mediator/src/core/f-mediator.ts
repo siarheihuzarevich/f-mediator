@@ -1,9 +1,9 @@
 import {inject, Injectable, Injector, Type} from '@angular/core';
-import { IExecution } from './i-execution';
-import { IValidator } from './i-validator';
+import { IExecution } from '../interfaces/i-execution';
+import { IValidator } from '../interfaces/i-validator';
 import { Pipeline } from './pipeline';
-import { ICommand } from './i-command';
-import { IQuery } from './i-query';
+import { ICommand } from '../interfaces/i-command';
+import { IQuery } from '../interfaces/i-query';
 
 @Injectable()
 export class FMediator {

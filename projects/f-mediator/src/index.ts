@@ -1,31 +1,31 @@
-export * from './f-execution-register';
+export * from './decorators/f-execution-register';
 
-export * from './f-mediator';
+export * from './decorators/f-validator-register';
 
-export * from './f-validator-register';
+export * from './decorators/f-command-handler-register';
 
-export * from './f-command-handler-register';
+export * from './decorators/f-query-handler-register';
 
-export * from './f-query-handler-register';
+export * from './core/f-mediator';
 
-export * from './i-execution';
+export * from './core/pipeline';
 
-export * from './i-handler';
+export * from './interfaces/i-execution';
 
-export * from './i-validator';
+export * from './interfaces/i-handler';
 
-export * from './i-command';
+export * from './interfaces/i-validator';
 
-export * from './i-query';
+export * from './interfaces/i-command';
 
-export * from './i-command-handler';
+export * from './interfaces/i-query';
 
-export * from './i-query-handler';
+export * from './interfaces/i-command-handler';
 
-export * from './i-pipeline-context';
+export * from './interfaces/i-query-handler';
 
-export * from './pipeline';
+export * from './interfaces/i-pipeline-context';
 
-export * from './validation-error';
+export * from './errors/validation-error';
 
-export * from './validation-skip-error';
+export * from './errors/validation-skip-error';

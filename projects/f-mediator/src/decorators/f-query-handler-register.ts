@@ -1,7 +1,7 @@
 import { Type } from '@angular/core';
-import { FMediator } from './f-mediator';
-import { IQueryHandler } from './i-query-handler';
-import { IQuery } from './i-query';
+import { FMediator } from '../core/f-mediator';
+import { IQueryHandler } from '../interfaces/i-query-handler';
+import { IQuery } from '../interfaces/i-query';
 
 type Constructor<T = any> = new (...args: any[]) => T;
 
