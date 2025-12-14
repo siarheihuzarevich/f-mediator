@@ -38,10 +38,16 @@ export class FMediator {
   }
 
   public sendCommand<TResponse = void>(command: ICommand): TResponse {
+    if (!(command as any).constructor?.fToken) {
+      throw new Error('Command must have a fToken static property on its constructor.');
+    }
     return this.send<TResponse>(command);
   }
 
   public sendQuery<TResponse>(query: IQuery<TResponse>): TResponse {
+    if (!(query as any).constructor?.fToken) {
+      throw new Error('Query must have a fToken static property on its constructor.');
+    }
     return this.send<TResponse>(query);
   }
 
