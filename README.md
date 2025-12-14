@@ -40,7 +40,7 @@ Implement a validator by extending IValidator and using the FValidatorRegister d
     
 ```typescript
 import { Injectable } from '@angular/core';
-import { IValidator, FValidatorRegister, ValidationError, ValidationSkipError } from 'angular-flow-mediator';
+import { IValidator, FValidatorRegister, ValidationError, ValidationSkipError } from '@foblex/mediator';
 import { MyRequest } from './my-request';
 
 @Injectable()
@@ -69,7 +69,7 @@ Implement an execution handler by extending IExecution and using the FExecutionR
 
 ```typescript
 import { Injectable } from '@angular/core';
-import { IExecution, FExecutionRegister } from 'angular-flow-mediator';
+import { IExecution, FExecutionRegister } from '@foblex/mediator';
 import { MyRequest } from './my-request';
 
 @Injectable()
