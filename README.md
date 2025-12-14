@@ -29,6 +29,7 @@ Create a class representing your request:
 
 ```typescript
 export class MyRequest {
+  static readonly fToken = Symbol('MyRequest');
   constructor(public payload: any) {}
 }
 ```

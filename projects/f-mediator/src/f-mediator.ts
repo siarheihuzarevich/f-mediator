@@ -1,4 +1,4 @@
-import { Injectable, Injector, Type } from '@angular/core';
+import {inject, Injectable, Injector, Type} from '@angular/core';
 import { IExecution } from './i-execution';
 import { IValidator } from './i-validator';
 import { Pipeline } from './pipeline';
@@ -6,30 +6,30 @@ import { Pipeline } from './pipeline';
 @Injectable()
 export class FMediator {
 
-  constructor(
-    private injector: Injector,
-  ) {
-  }
+  private readonly _injector = inject(Injector);
 
   public static pipelines = new Map<string, Pipeline<any, any>>();
 
   public static registerPipeline<TRequest, TResponse>(
-    type: Type<TRequest>,
+    type: any,
     handler: Type<IValidator<TRequest>> | Type<IExecution<TRequest, TResponse>>,
     isValidator: boolean
   ): void {
-    const pipeline = this.pipelines.get(type.name) || new Pipeline<TRequest, TResponse>();
+    if (!type || !type.fToken) {
+      throw new Error('Type must have a fToken static property.');
+    }
+    const pipeline = this.pipelines.get(type.fToken) || new Pipeline<TRequest, TResponse>();
     isValidator
       ? pipeline.setValidator(handler as Type<IValidator<TRequest>>)
       : pipeline.setExecution(handler as Type<IExecution<TRequest, TResponse>>);
 
-    this.pipelines.set(type.name, pipeline);
+    this.pipelines.set(type.fToken, pipeline);
   }
 
   public send<TResponse>(request: any): TResponse {
-    const pipeline = FMediator.pipelines.get(request.constructor.name);
+    const pipeline = FMediator.pipelines.get(request.constructor.fToken);
     if (pipeline) {
-      return pipeline.handle(request, this.injector);
+      return pipeline.handle(request, this._injector);
     }
 
     throw new Error('Handler not registered for request type.');
@@ -37,6 +37,6 @@ export class FMediator {
 
   // run pipeline without validation and error handling
   public execute<TResponse>(request: any): TResponse {
-    return FMediator.pipelines.get(request.constructor.name)!.execute(request, this.injector);
+    return FMediator.pipelines.get(request.constructor.fToken)!.execute(request, this._injector);
   }
 }
